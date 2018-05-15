@@ -4,13 +4,14 @@ import (
 	"net/http"
 	"log"
 	"strconv"
+	"regexp"
 )
 
 func startHttpServer() {
 	http.HandleFunc("/updateDomain", updateHandler)
 	go func(){
 		log.Printf("Setting up HTTP server on port %d\n", httpPort)
-		if err := http.ListenAndServe(":" + strconv.Itoa(httpPort), nil); err != nil {
+		if err := http.ListenAndServe("0.0.0.0:" + strconv.Itoa(httpPort), nil); err != nil {
 			log.Fatalf("Failed to set HTTP server %s\n", err.Error())
 		}
 	}()
@@ -30,9 +31,8 @@ func updateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	ipAddress := r.FormValue("ipAddress")
 	if ipAddress == "" {
-		w.WriteHeader(400)
-		w.Write([]byte("Bad address"))
-		return
+		ipRegex := regexp.MustCompile("(^.*)(?:\\:\\d*$)")
+		ipAddress = ipRegex.FindStringSubmatch(r.RemoteAddr)[1]
 	}
 	success := addZone(domain, ipAddress)
 	if !success {
