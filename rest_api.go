@@ -7,7 +7,10 @@ import (
 	"regexp"
 )
 
-func startHttpServer() {
+var apiKey string
+
+func startHttpServer(key string) {
+	apiKey = key
 	http.HandleFunc("/updateDomain", updateHandler)
 	go func(){
 		log.Printf("Setting up HTTP server on port %d\n", httpPort)
